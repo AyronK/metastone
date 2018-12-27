@@ -1,7 +1,6 @@
 package net.demilich.metastone.console;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
 import net.demilich.metastone.game.GameContext;
 import net.demilich.metastone.game.Player;
 import net.demilich.metastone.game.behaviour.PlayRandomBehaviour;
@@ -16,16 +15,34 @@ import net.demilich.metastone.game.gameconfig.GameConfig;
 import net.demilich.metastone.game.gameconfig.PlayerConfig;
 import net.demilich.metastone.game.logic.GameLogic;
 import net.demilich.metastone.game.statistics.GameStatistics;
-import net.demilich.metastone.gui.cards.CardProxy;
 import net.demilich.metastone.gui.deckbuilder.DeckProxy;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import static net.demilich.metastone.game.cards.CardSet.*;
 
+class PlayersGameStatistics {
+    private GameStatistics Player1;
+    private GameStatistics Player2;
+
+    PlayersGameStatistics(GameStatistics player1Statistics, GameStatistics player2Statistics) {
+        Player1 = player1Statistics;
+        Player2 = player2Statistics;
+    }
+
+    public GameStatistics getPlayer2Statistics() {
+        return Player2;
+    }
+
+    public GameStatistics getPlayer1Statistics() {
+        return Player1;
+    }
+}
+
 public class MetaStoneSim {
     public static void main(String[] args) {
-        int simulationsCount = 100;
+        int simulationsCount = 1000;
         String d1Name = null, d2Name = null;
         try {
             //Read simulations count arg
@@ -52,19 +69,19 @@ public class MetaStoneSim {
 
         }
 
-        try {
-            CardCatalogue.copyCardsFromResources();
-            CardCatalogue.loadCards();
-        } catch (Exception e) {
-
-        }
-
         //Define deck format
         DeckFormat deckFormat = new DeckFormat();
         for (CardSet set : new CardSet[]{ANY, BASIC, CLASSIC, REWARD, PROMO, HALL_OF_FAME}) {
             deckFormat.addSet(set);
         }
 
+        //Load cards
+        try {
+            CardCatalogue.copyCardsFromResources();
+            CardCatalogue.loadCards();
+        } catch (Exception e) {
+
+        }
         //Load decks
         DeckProxy dp = new DeckProxy();
         try {
@@ -81,19 +98,14 @@ public class MetaStoneSim {
         Deck d2 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD2Name)).findFirst().get();
         GameConfig gc = GetGameConfig(d1, d2, deckFormat, simulationsCount);
 
-        GameStatistics[] stats = Simulate(gc);
+        PlayersGameStatistics stats = Simulate(gc);
 
         //Save json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        String p1json = gson.toJson(stats[0]);
-        String p2json = gson.toJson(stats[1]);
-
-        System.out.println("Player 1 stats");
-        System.out.println(p1json);
-        System.out.println("Player 2 stats");
-        System.out.println(p2json);
+        String json = gson.toJson(stats);
+        System.out.println(json);
     }
+
 
     protected static HeroCard getHeroCardForClass(HeroClass heroClass) {
         for (Card card : CardCatalogue.getHeroes()) {
@@ -123,7 +135,7 @@ public class MetaStoneSim {
         return gc;
     }
 
-    private static GameStatistics[] Simulate(GameConfig gameConfig) {
+    private static PlayersGameStatistics Simulate(GameConfig gameConfig) {
         GameStatistics p1stats = new GameStatistics(), p2stats = new GameStatistics();
 
         for (int i = 0; i < gameConfig.getNumberOfGames(); i++) {
@@ -140,7 +152,7 @@ public class MetaStoneSim {
             context.dispose();
         }
 
-        return new GameStatistics[]{p1stats, p2stats};
+        return new PlayersGameStatistics(p1stats, p2stats);
     }
 
     private static GameStatistics[] Simulate(Deck deck1, Deck deck2, DeckFormat format, int simulationsCount) {
