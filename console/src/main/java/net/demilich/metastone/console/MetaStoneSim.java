@@ -66,27 +66,27 @@ public class MetaStoneSim {
 
         }
         //Load decks
-//        DeckProxy dp = new DeckProxy();
-//        try {
-//            dp.loadDecks();
-//        } catch (Exception e) {
-//        }
-//
-//        Deck[] decks = dp.getDecks().toArray(new Deck[dp.getDecks().size()]);
+        DeckProxy dp = new DeckProxy();
+        try {
+            dp.loadDecks();
+        } catch (Exception e) {
+        }
+
+        Deck[] decks = dp.getDecks().toArray(new Deck[dp.getDecks().size()]);
 
         //Simulate
         String finalD1Name = d1Name;
-        //Deck d1 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD1Name)).findFirst().get();
+        Deck d1 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD1Name)).findFirst().get();
         String finalD2Name = d2Name;
-        //Deck d2 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD2Name)).findFirst().get();
-        //GameConfig gc = GetGameConfig(d1, d2, deckFormat, simulationsCount);
+        Deck d2 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD2Name)).findFirst().get();
+        GameConfig gc = GetGameConfig(d1, d2, deckFormat, simulationsCount);
 
-       // PlayersGameStatistics stats = Simulate(gc);
+        PlayersGameStatistics stats = Simulate(gc);
 
         //Save json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-       // String json = gson.toJson(stats);
-       // System.out.println(json);
+        String json = gson.toJson(stats);
+        System.out.println(json);
     }
 
 
