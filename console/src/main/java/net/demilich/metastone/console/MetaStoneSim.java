@@ -16,15 +16,12 @@ import net.demilich.metastone.game.gameconfig.PlayerConfig;
 import net.demilich.metastone.game.logic.GameLogic;
 import net.demilich.metastone.game.statistics.GameStatistics;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import static net.demilich.metastone.game.cards.CardSet.*;
 
 public class MetaStoneSim {
     public static void main(String[] args) {
-        System.out.println("Simulating...");
-
         int simulationsCount = 1000;
         String d1Name = null, d2Name = null;
         try {
