@@ -15,30 +15,10 @@ import net.demilich.metastone.game.gameconfig.GameConfig;
 import net.demilich.metastone.game.gameconfig.PlayerConfig;
 import net.demilich.metastone.game.logic.GameLogic;
 import net.demilich.metastone.game.statistics.GameStatistics;
-import net.demilich.metastone.gui.deckbuilder.DeckProxy;
 
-import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import static net.demilich.metastone.game.cards.CardSet.*;
-
-class PlayersGameStatistics {
-    private GameStatistics Player1;
-    private GameStatistics Player2;
-
-    PlayersGameStatistics(GameStatistics player1Statistics, GameStatistics player2Statistics) {
-        Player1 = player1Statistics;
-        Player2 = player2Statistics;
-    }
-
-    public GameStatistics getPlayer2Statistics() {
-        return Player2;
-    }
-
-    public GameStatistics getPlayer1Statistics() {
-        return Player1;
-    }
-}
 
 public class MetaStoneSim {
     public static void main(String[] args) {
