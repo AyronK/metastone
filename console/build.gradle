@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'application'
 
 version 'unspecified'
-
+archivesBaseName = 'MetaStoneSim'
 sourceCompatibility = 1.8
 
 repositories {
