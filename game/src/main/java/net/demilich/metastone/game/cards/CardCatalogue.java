@@ -194,7 +194,7 @@ public class CardCatalogue {
 		// if we have not copied cards to the USER_HOME_METASTONE cards folder,
 		// then do so now
 		int cardRevision = MetastoneProperties.getInt(CARDS_COPIED_PROPERTY, 0);
-		System.out.println("Existing card revision = " + cardRevision);
+		logger.info("Existing card revision = " + cardRevision);
 		if (BuildConfig.CARD_REVISION > cardRevision) {
 			logger.info("Card update required: MetaStone card revision is: {}, last card update was with revision {}", BuildConfig.CARD_REVISION, cardRevision);
 			ResourceLoader.copyFromResources(CARDS_FOLDER, CARDS_FOLDER_PATH);

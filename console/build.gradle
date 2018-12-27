@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+version 'unspecified'
+archivesBaseName = 'MetaStoneSim'
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+mainClassName = "net.demilich.metastone.console.MetaStoneSim"
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': rootProject.name.capitalize(),
+                    'Implementation-Version': project.version,
+                    "Main-Class": "net.demilich.metastone.console.MetaStoneSim"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
+}
+
+dependencies {
+    compile project(':game')
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile 'org.jsoup:jsoup:1.10.2'
+}
