@@ -3,7 +3,14 @@ package net.demilich.metastone.console;
 import com.google.gson.*;
 import net.demilich.metastone.game.GameContext;
 import net.demilich.metastone.game.Player;
+import net.demilich.metastone.game.behaviour.GreedyOptimizeMove;
+import net.demilich.metastone.game.behaviour.GreedyOptimizeTurn;
+import net.demilich.metastone.game.behaviour.IBehaviour;
 import net.demilich.metastone.game.behaviour.PlayRandomBehaviour;
+import net.demilich.metastone.game.behaviour.heuristic.WeightedHeuristic;
+import net.demilich.metastone.game.behaviour.threat.FeatureVector;
+import net.demilich.metastone.game.behaviour.threat.GameStateValueBehaviour;
+import net.demilich.metastone.game.behaviour.threat.ThreatBasedHeuristic;
 import net.demilich.metastone.game.cards.Card;
 import net.demilich.metastone.game.cards.CardCatalogue;
 import net.demilich.metastone.game.cards.CardSet;
@@ -16,6 +23,7 @@ import net.demilich.metastone.game.gameconfig.PlayerConfig;
 import net.demilich.metastone.game.logic.GameLogic;
 import net.demilich.metastone.game.statistics.GameStatistics;
 
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 import static net.demilich.metastone.game.cards.CardSet.*;
@@ -24,6 +32,7 @@ public class MetaStoneSim {
     public static void main(String[] args) {
         int simulationsCount = 1000;
         String d1Name = null, d2Name = null;
+        int aiLevel = 0;
         try {
             //Read simulations count arg
             int i = Arrays.asList(args).indexOf("--simulationsCount");
@@ -44,6 +53,14 @@ public class MetaStoneSim {
             i = i != -1 ? i : Arrays.asList(args).indexOf("-d2");
             if (i != -1) {
                 d2Name = args[i + 1];
+            }
+
+
+            //Read AI level
+            i = Arrays.asList(args).indexOf("--AILevel");
+            i = i != -1 ? i : Arrays.asList(args).indexOf("-ai");
+            if (i != -1) {
+                aiLevel = Integer.parseInt(args[i + 1]);
             }
         } catch (Exception e) {
 
@@ -76,16 +93,18 @@ public class MetaStoneSim {
         Deck d1 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD1Name)).findFirst().get();
         String finalD2Name = d2Name;
         Deck d2 = Arrays.stream(decks).filter(d -> d.getName().equals(finalD2Name)).findFirst().get();
-        GameConfig gc = GetGameConfig(d1, d2, deckFormat, simulationsCount);
+        GameConfig gc = GetGameConfig(d1, d2, deckFormat, aiLevel, simulationsCount);
 
         PlayersGameStatistics stats = Simulate(gc);
 
         //Save json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String json = gson.toJson(stats);
-        System.out.println(json);
+        PrintWriter writer = new PrintWriter(System.out);
+        writer.println(json);
+        writer.flush();
+        writer.close();
     }
-
 
     protected static HeroCard getHeroCardForClass(HeroClass heroClass) {
         for (Card card : CardCatalogue.getHeroes()) {
@@ -97,12 +116,12 @@ public class MetaStoneSim {
         return null;
     }
 
-    public static GameConfig GetGameConfig(Deck deck1, Deck deck2, DeckFormat format, int simulationsCount) {
-        PlayerConfig player1Config = new PlayerConfig(deck1, new PlayRandomBehaviour());
+    public static GameConfig GetGameConfig(Deck deck1, Deck deck2, DeckFormat format, int aiLevel, int simulationsCount) {
+        PlayerConfig player1Config = new PlayerConfig(deck1, GetAIBehaviour(aiLevel));// new GameStateValueBehaviour(FeatureVector.getFittest(), "a"));
         player1Config.setName("Player 1");
         player1Config.setHeroCard(getHeroCardForClass(deck1.getHeroClass()));
 
-        PlayerConfig player2Config = new PlayerConfig(deck2, new PlayRandomBehaviour());
+        PlayerConfig player2Config = new PlayerConfig(deck2, GetAIBehaviour(aiLevel));// new GameStateValueBehaviour(FeatureVector.getFittest(), "b"));
         player2Config.setName("Player 2");
         player2Config.setHeroCard(getHeroCardForClass(deck2.getHeroClass()));
 
@@ -113,6 +132,21 @@ public class MetaStoneSim {
         gc.setDeckFormat(format);
 
         return gc;
+    }
+
+    private static IBehaviour GetAIBehaviour(int aiLevel) {
+        switch (aiLevel) {
+            case 0:
+                return new PlayRandomBehaviour();
+            case 1:
+                return new GreedyOptimizeMove(new WeightedHeuristic());
+            case 2:
+                return new GreedyOptimizeTurn(new WeightedHeuristic());
+            case 3:
+                return new GameStateValueBehaviour(FeatureVector.getFittest(), "(fittest)");
+            default:
+                throw new ArrayIndexOutOfBoundsException(aiLevel);
+        }
     }
 
     private static PlayersGameStatistics Simulate(GameConfig gameConfig) {
